@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pizzeria</title>
+    {% if token %}
+        <a href="/profile">Profile</a>
+        <a href="/logout">Log out</a>
+    {% else %}
+        <a href="/login">Login</a>
+        <a href="/register">Register</a>
+    {% endif %}
+</head>
+<body>
+    <h1>Welcome to Pizzeria!</h1>
+    <a href="/menu">See Menu</a>
+    <a href="/order">Make an order</a>
+</body>
+</html>

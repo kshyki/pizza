@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Your orders</title>
+</head>
+<body>
+    <h1>Your orders</h1>
+    <ul>
+        {% for order in orders %}
+            <li>
+                <a>{{ order.content }}</a> - {{ order.price }}Kč
+            </li>
+        {% endfor %}
+    </ul>
+    <a href="/profile">Back</a>
+</body>
+</html>
