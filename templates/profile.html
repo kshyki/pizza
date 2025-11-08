@@ -1,14 +1,35 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Profile</title>
+  <title>Profile</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='styles/style.css') }}">
+
 </head>
 <body>
+  <div class="top-bar">
+    <div class="top-bar-left">
+      <a href="/">CryptoPizza</a>
+    </div>
+    <div class="top-bar-right">
+      {% if token %}
+        <a href="/profile">Profile</a>
+        <a href="/logout">Log out</a>
+      {% else %}
+        <a href="/login">Login</a>
+        <a href="/register">Register</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="profile-card">
     <h1>Your profile</h1>
     <p>Your name: {{user.name}}</p>
     <p>Your email: {{user.email}}</p>
-    <a href = "/profile/orders">Orders</a>
-    <a href="/">Back</a>
-    <a href = "/logout">Log out</a>
+    <div class="actions">
+      <a class="button" href="/profile/orders">Orders</a>
+      <a class="button" href="/">Back</a>
+      <a class="button" href="/logout">Log out</a>
+    </div>
+  </div>
 </body>
 </html>

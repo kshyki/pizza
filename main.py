@@ -9,10 +9,12 @@ from typing import Annotated
 from config import descriptions, photo_links, SECRET_KEY
 import jwt
 from jwttokens import create_access_token, access_token_required
+from fastapi.staticfiles import StaticFiles
 
 Base.metadata.create_all(bind=engine)
 templates = Jinja2Templates(directory="templates")
 db = Session(bind=engine)
+
 
 if db.query(Menu).count() == 0:
     pizzas = [
@@ -25,7 +27,7 @@ if db.query(Menu).count() == 0:
 db.close()
 
 app = FastAPI()
-    
+app.mount("/static", StaticFiles(directory="static"), name="static")
 @app.get("/")
 async def root(request: Request):
     token = request.cookies.get("my_access_token")
@@ -35,19 +37,22 @@ async def root(request: Request):
 @app.get("/menu")
 async def menu(request: Request, db: Session = Depends(get_db)):
     menu = db.query(Menu).all()
-    return templates.TemplateResponse("menu.html", {"request": request, "menu": menu})
+    token = request.cookies.get("my_access_token")
+    return templates.TemplateResponse("menu.html", {"request": request, "menu": menu, "token": token})
 
 @app.get("/menu/{pizza_name}")
 async def pizza(pizza_name: str, request: Request, db: Session = Depends(get_db)):
     pizza = db.query(Menu).filter(Menu.name == pizza_name).first()
-    return templates.TemplateResponse("pizza.html", {"request": request, "pizza": pizza})
+    token = request.cookies.get("my_access_token")
+    return templates.TemplateResponse("pizza.html", {"request": request, "pizza": pizza, "token": token})
 
 @app.post("/register")
-async def register(name:Annotated[str, Form()], email : Annotated[str, Form()], password: Annotated[str, Form()], db: Session = Depends(get_db)):
+async def register(request: Request, name:Annotated[str, Form()], email : Annotated[str, Form()], password: Annotated[str, Form()], db: Session = Depends(get_db)):
         hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode("utf-8")
         user_name, user_email = name, email
+        token = request.cookies.get("my_access_token")
         if(db.query(User).filter(User.email == email)) != None:
-            raise HTTPException(status_code=400, detail="User with same email is already exists")
+            return templates.TemplateResponse("problem.html", {"request": request, "token": token, "detail": "Account with same password is already exists!"})
         new_user = User(name = user_name, email = user_email, password = hashed_password)
         db.add(new_user)
         db.commit()
@@ -65,14 +70,15 @@ async def registerr(request : Request, db: Session = Depends(get_db)):
                 return RedirectResponse(url="/profile", status_code=303)
         except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
             pass
-    return templates.TemplateResponse("register.html", {"request": request})
+    return templates.TemplateResponse("register.html", {"request": request, "token": token})
 
 @app.post("/login")
-async def login(email : Annotated[str, Form()], password1: Annotated[str, Form()], response: Response, db: Session = Depends(get_db)):
+async def login(request: Request, email : Annotated[str, Form()], password1: Annotated[str, Form()], response: Response, db: Session = Depends(get_db)):
         encoded_password = password1.encode('utf-8')
+        token = request.cookies.get("my_access_token")
         user = db.query(User).filter(User.email == email).first()
         if user is None:
-            raise HTTPException(status_code=400, detail="Invalid email or password")
+            return templates.TemplateResponse("problem.html", {"request": request, "token": token, "detail": "Invalid email or password!"})
         users_password = user.password.encode('utf-8')
         if bcrypt.checkpw(encoded_password, users_password):
             user_id = user.id
@@ -86,7 +92,7 @@ async def login(email : Annotated[str, Form()], password1: Annotated[str, Form()
             )
             return redirect_response 
         else:
-            raise HTTPException(status_code=400, detail="Invalid email or password")
+            return templates.TemplateResponse("problem.html", {"request": request, "token": token, "detail": "Invalid email or password!"})
 
 @app.get("/login")
 async def loginn(request : Request, db: Session = Depends(get_db)):
@@ -98,7 +104,7 @@ async def loginn(request : Request, db: Session = Depends(get_db)):
                 return RedirectResponse(url="/profile", status_code=303)
         except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
             pass  
-    return templates.TemplateResponse("login.html", {"request": request})
+    return templates.TemplateResponse("login.html", {"request": request, "token": token})
 
 @app.get("/profile")
 async def profile(request : Request, payload : dict = Depends(access_token_required), db: Session = Depends(get_db)):
@@ -108,7 +114,8 @@ async def profile(request : Request, payload : dict = Depends(access_token_requi
     print(user_id)
     user = db.query(User).filter(User.id == user_id).first()
 
-    return templates.TemplateResponse("profile.html", {"request": request, "user": user})
+    token = request.cookies.get("my_access_token")
+    return templates.TemplateResponse("profile.html", {"request": request, "user": user, "token": token})
 
 @app.get("/profile/orders")
 async def orders(request: Request, db: Session = Depends(get_db), payload : dict = Depends(access_token_required)):
@@ -116,11 +123,13 @@ async def orders(request: Request, db: Session = Depends(get_db), payload : dict
         return payload
     user_id = payload.get("sub")
     orders = db.query(Orders).filter(Orders.user_id == user_id)
-    return templates.TemplateResponse("orders.html", {"request": request, "orders": orders})
+    token = request.cookies.get("my_access_token")
+    return templates.TemplateResponse("orders.html", {"request": request, "orders": orders, "token": token})
 
 @app.get("/order")
 async def order(request: Request):
-    return templates.TemplateResponse("order.html", {"request": request})
+    token = request.cookies.get("my_access_token")
+    return templates.TemplateResponse("order.html", {"request": request, "token": token})
 
 @app.post("/makeorder")
 async def makeorder(

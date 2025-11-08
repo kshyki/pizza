@@ -1,17 +1,37 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>"Login"</title>
+  <title>Login</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='styles/style.css') }}">
 </head>
 <body>
-    <form action = "/login" method="post">
-        <label for = "email">Email:</label><br>
-        <input type = "text" id = "email" name = "email"><br>
-        <label for = "password">Password:</label><br>
-        <input type = "password" id = "password1" name = "password1"><br>
-        <label for = "space"> </label><br>
-        <button type = "submit" value="submit">Login</button><br><br>
-        <a href="/register">Don't have an account? Sign up!</a>
+  <div class="top-bar">
+    <div class="top-bar-left">
+      <a href="/">CryptoPizza</a>
+    </div>
+    <div class="top-bar-right">
+      {% if token %}
+        <a href="/profile">Profile</a>
+        <a href="/logout">Log out</a>
+      {% else %}
+        <a href="/login">Login</a>
+        <a href="/register">Register</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <h1>Login</h1>
+  <div class="logreg">
+    <form action="/login" method="post">
+      <label for="email">Email</label>
+      <input type="text" id="email" name="email">
+
+      <label for="password1">Password</label>
+      <input type="password" id="password1" name="password1">
+
+      <button class="submit-button" type="submit" value="submit">Login</button>
+      <a class="muted" href="/register">Don't have an account? Sign up</a>
     </form>
+  </div>
 </body>
 </html>

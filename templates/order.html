@@ -2,8 +2,24 @@
 <html>
 <head>
     <title>"New order"</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='styles/style.css') }}">
 </head>
 <body>
+  <div class="top-bar">
+    <div class="top-bar-left">
+      <a href="/">CryptoPizza</a>
+    </div>
+    <div class="top-bar-right">
+      {% if token %}
+        <a href="/profile">Profile</a>
+        <a href="/logout">Log out</a>
+      {% else %}
+        <a href="/login">Login</a>
+        <a href="/register">Register</a>
+      {% endif %}
+    </div>
+  </div>
+  <div class = "make-order">
     <form action="/makeorder" method="post">
     <label>Peperoni:</label>
     <input type="number" name="peperoni_amount" value="1"><br>
@@ -14,8 +30,9 @@
     <label>Cheese:</label>
     <input type="number" name="cheese_amount" value="1"><br>
 
-    <button type="submit">Order</button>
-    <a href="/">Back</a>
+    <button class="submit-button" type="submit">Order</button>
+    <a class="button" href="/">Back</a>
     </form>
+  </div>
 </body>
 </html>

@@ -2,12 +2,29 @@
 <html>
 <head>
     <title>{{ pizza.name }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='styles/style.css') }}">
 </head>
 <body>
+  <div class="top-bar">
+    <div class="top-bar-left">
+      <a href="/">CryptoPizza</a>
+    </div>
+    <div class="top-bar-right">
+      {% if token %}
+        <a href="/profile">Profile</a>
+        <a href="/logout">Log out</a>
+      {% else %}
+        <a href="/login">Login</a>
+        <a href="/register">Register</a>
+      {% endif %}
+    </div>
+  </div>
+  <div class="pizza-desc"></div>
     <h1>{{ pizza.name }}</h1>
     <img src="{{ pizza.photo_link }}" alt="{{ pizza.name }}" width = "200" height="200">
     <p>Price: {{ pizza.price }}Kč</p>
-    <p>{{ pizza.description }}</p>
-    <a href="/menu">Back to menu </a>
+    <p class="description">{{ pizza.description }}</p>
+    <a class="button" href="/menu">Back to menu</a>
+  </div>
 </body>
 </html>
